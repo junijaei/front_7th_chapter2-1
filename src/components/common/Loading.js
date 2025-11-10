@@ -1,4 +1,4 @@
-export default function Loading({ message }) {
+const Loading = ({ message }) => {
   return `
     <div class="text-center py-4">
         <div class="inline-flex items-center">
@@ -11,4 +11,6 @@ export default function Loading({ message }) {
         </div>
     </div>
     `;
-}
+};
+
+export default Loading;

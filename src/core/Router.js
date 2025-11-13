@@ -1,3 +1,25 @@
+// 전역 router 인스턴스
+let routerInstance = null;
+
+// router 초기화 함수
+export const initRouter = (routers) => {
+  // 기존 router 인스턴스가 있으면 정리
+  if (routerInstance && routerInstance.destroy) {
+    routerInstance.destroy();
+  }
+
+  routerInstance = createRouter(routers);
+  return routerInstance;
+};
+
+// router 인스턴스 가져오기
+export const Router = () => {
+  if (!routerInstance) {
+    throw new Error("Router가 초기화되지 않았습니다. initRouter()를 먼저 호출하세요.");
+  }
+  return routerInstance;
+};
+
 export const createRouter = (routers) => {
   const baseUrl = import.meta.env.BASE_URL || "/";
 
@@ -56,26 +78,4 @@ export const createRouter = (routers) => {
   setup();
 
   return { push, destroy };
-};
-
-// 전역 router 인스턴스
-let routerInstance = null;
-
-// router 초기화 함수
-export const initRouter = (routers) => {
-  // 기존 router 인스턴스가 있으면 정리
-  if (routerInstance && routerInstance.destroy) {
-    routerInstance.destroy();
-  }
-
-  routerInstance = createRouter(routers);
-  return routerInstance;
-};
-
-// router 인스턴스 가져오기
-export const Router = () => {
-  if (!routerInstance) {
-    throw new Error("Router가 초기화되지 않았습니다. initRouter()를 먼저 호출하세요.");
-  }
-  return routerInstance;
 };

@@ -25,6 +25,7 @@ export default [
         alias: {
           map: [
             ["@", "./src"],
+            ["@e2e", "./e2e"],
             ["@components", "./src/components"],
             ["@pages", "./src/pages"],
             ["@api", "./src/api"],

@@ -333,8 +333,8 @@ const createCartModal = () => {
     const modalRoot = initModalRoot();
     const state = cartStore.getState();
 
+    modalRoot.innerHTML = "";
     if (!state.isOpen) {
-      modalRoot.innerHTML = "";
       document.body.style.overflow = "";
       return;
     }
@@ -345,7 +345,7 @@ const createCartModal = () => {
     });
 
     document.body.style.overflow = "hidden";
-    requestAnimationFrame(() => attachEventListeners());
+    attachEventListeners();
   };
 
   // ===== Public API =====
@@ -437,11 +437,7 @@ const createCartModal = () => {
     }
 
     cartStore.setState({ selectedIds: newSelectedIds });
-
-    // DOM 직접 업데이트
-    const modalRoot = document.getElementById("cart-modal-root");
-    if (modalRoot)
-      modalRoot.querySelector(`#cart-modal-select-all-checkbox`).checked = newSelectedIds.size === state.items.length;
+    render();
   };
 
   const toggleSelectAll = (selected) => {
@@ -449,11 +445,7 @@ const createCartModal = () => {
     const newSelectedIds = selected ? new Set(state.items.map((item) => item.productId)) : new Set();
 
     cartStore.setState({ selectedIds: newSelectedIds });
-
-    // DOM 직접 업데이트
-    const modalRoot = document.getElementById("cart-modal-root");
-    if (!modalRoot) return;
-    modalRoot.querySelectorAll(".cart-item-checkbox").forEach((cb) => (cb.checked = selected));
+    render();
   };
 
   const removeSelectedItems = () => {

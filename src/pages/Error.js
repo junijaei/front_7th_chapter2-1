@@ -54,6 +54,7 @@ const Error = Component({
           </svg>
 
           <a
+            href="/"
             data-link
             class="inline-block px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
           >

@@ -24,7 +24,7 @@ const Home = Component({
 
   initialState: () => ({
     products: [],
-    pagination: { limit: 10, page: 1 },
+    pagination: { limit: 20, page: 1 },
     filters: {},
     loading: true,
     loadingMore: false,
@@ -33,51 +33,57 @@ const Home = Component({
   }),
 
   children: (context) => {
-    const { state, mountChildren } = context;
+    const { state, mountChildren, setState } = context;
 
     // Header와 Footer는 항상 마운트
     mountChildren(Header, "#header");
     mountChildren(Footer, "#footer");
 
+    // Search 컴포넌트
     mountChildren(Search, "#search", {
       pagination: state.pagination,
       filters: state.filters,
       onChangePageLimit: (newPageLimit) => {
-        context.setState({
+        setState({
           pagination: { ...state.pagination, limit: newPageLimit },
         });
       },
       onChangeSort: (newSort) => {
-        context.setState({
+        setState({
           filters: { ...state.filters, sort: newSort },
         });
       },
       onChangeSearch: (newSearch) => {
-        context.setState({
+        setState({
           filters: { ...state.filters, search: newSearch },
         });
       },
       onChangeCategory: (category1, category2) => {
-        context.setState({
+        setState({
           filters: { ...state.filters, category1, category2 },
         });
       },
     });
 
+    // ProductList 컴포넌트
     mountChildren(ProductList, "#products-list", {
       products: state.products,
       loading: state.loading,
       loadingMore: state.loadingMore,
       hasNext: state.hasNext,
       pagination: state.pagination,
+      error: state.error,
       onLoadMore: () => {
-        // 다음 페이지 로드
-        if (!state.loadingMore && state.hasNext) {
-          context.setState({
+        if (!state.loadingMore && state.hasNext && !state.error) {
+          setState({
             loadingMore: true,
             pagination: { ...state.pagination, page: state.pagination.page + 1 },
           });
         }
+      },
+      onRetry: () => {
+        setState({ error: null, loading: true });
+        // setup에서 등록한 fetchProducts가 자동으로 실행됨
       },
     });
   },
@@ -86,23 +92,23 @@ const Home = Component({
     const { state, setState, onStateChange } = context;
     const router = Router();
 
+    // ========== Helper Functions ==========
+
     // URL에서 초기 상태 가져오기
     const initializeFromURL = () => {
       const query = router.getQuery();
-
-      const initialFilters = {
-        search: query.search || "",
-        category1: query.category1 || "",
-        category2: query.category2 || "",
-        sort: query.sort || "price_asc",
+      return {
+        filters: {
+          search: query.search || "",
+          category1: query.category1 || "",
+          category2: query.category2 || "",
+          sort: query.sort || "price_asc",
+        },
+        pagination: {
+          limit: parseInt(query.limit) || 20,
+          page: 1,
+        },
       };
-
-      const initialPagination = {
-        limit: parseInt(query.limit) || 10,
-        page: 1, // 무한 스크롤이므로 항상 1부터 시작
-      };
-
-      return { filters: initialFilters, pagination: initialPagination };
     };
 
     // URL 쿼리스트링 업데이트
@@ -114,67 +120,82 @@ const Home = Component({
         ...(currentState.filters.sort && { sort: currentState.filters.sort }),
         ...(currentState.pagination.limit && { limit: currentState.pagination.limit }),
       };
-
-      router.updateQuery(queryParams, true); // replace: true로 히스토리 스택에 쌓이지 않음
+      router.updateQuery(queryParams, true);
     };
 
-    const fetchProducts = async (currentState, isInitialLoad = false, isLoadMore = false) => {
+    // 상품 데이터 가져오기
+    const fetchProducts = async (currentState, options = {}) => {
+      const { isInitialLoad = false, isLoadMore = false } = options;
+
       try {
-        // API 호출
         const { products, pagination } = await getProducts({
           limit: currentState.pagination.limit,
           page: currentState.pagination.page,
           ...currentState.filters,
         });
 
-        // 데이터 로드 완료 후 setState
         setState({
           products: isLoadMore ? [...currentState.products, ...products] : products,
-          pagination: {
-            ...currentState.pagination,
-            ...pagination,
-          },
+          pagination: { ...currentState.pagination, ...pagination },
           hasNext: pagination.hasNext,
+          error: null,
           ...(isInitialLoad && { loading: false }),
           ...(isLoadMore && { loadingMore: false }),
         });
       } catch (error) {
         console.error("상품 로드 실패:", error);
         setState({
-          error: error.message,
+          error: error.message || "상품을 불러오는데 실패했습니다",
           loading: false,
           loadingMore: false,
         });
       }
     };
 
+    // ========== Initialization ==========
+
     // URL에서 초기 상태 설정
     const { filters, pagination } = initializeFromURL();
     setState({ filters, pagination });
 
     // 초기 로드
-    await fetchProducts({ ...state, filters, pagination }, true, false);
+    await fetchProducts({ ...state, filters, pagination }, { isInitialLoad: true });
 
-    // 검색 파라미터가 변경되면 다시 fetch (첫 페이지부터) 및 URL 업데이트
+    // ========== State Change Listeners ==========
+
+    // 필터 또는 페이지 크기 변경 시 → 첫 페이지부터 다시 로드
     onStateChange(
-      (state) => [state.filters, state.pagination.limit],
+      (state) => [
+        state.filters.search,
+        state.filters.category1,
+        state.filters.category2,
+        state.filters.sort,
+        state.pagination.limit,
+      ],
       ({ state }) => {
-        const newState = { ...state, pagination: { ...state.pagination, page: 1 }, products: [] };
-        setState({ pagination: { ...state.pagination, page: 1 }, products: [] });
-
-        // URL 업데이트
+        const newState = {
+          ...state,
+          pagination: { ...state.pagination, page: 1 },
+          products: [],
+        };
+        // loading: true로 설정해서 IntersectionObserver가 동작하지 않도록
+        setState({
+          pagination: { ...state.pagination, page: 1 },
+          products: [],
+          error: null,
+          loading: true,
+        });
         updateURL(newState);
-
-        fetchProducts(newState, false, false);
+        fetchProducts(newState, { isInitialLoad: true });
       },
     );
 
-    // 페이지가 변경되면 추가 로드 (URL은 업데이트하지 않음 - 무한 스크롤)
+    // 페이지 변경 시 → 추가 로드 (무한 스크롤)
     onStateChange(
       (state) => [state.pagination.page],
       ({ state, prevState }) => {
         if (state.pagination.page > prevState.pagination.page) {
-          fetchProducts(state, false, true);
+          fetchProducts(state, { isLoadMore: true });
         }
       },
     );

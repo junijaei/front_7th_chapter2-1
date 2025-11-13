@@ -266,7 +266,6 @@ const CartModalTemplate = ({ items, selectedIds }) => {
 // 장바구니 모달 관리
 const createCartModal = () => {
   const CART_MODAL_ROOT_ID = "cart-modal-root";
-  let eventListenersAttached = false;
   let escKeyHandler = null;
 
   // 모달 Root 초기화
@@ -282,13 +281,10 @@ const createCartModal = () => {
 
   // 이벤트 리스너 등록 (한 번만)
   const attachEventListeners = () => {
-    if (eventListenersAttached) return;
     const modalRoot = initModalRoot();
     if (!modalRoot) return;
 
-    eventListenersAttached = true;
-
-    modalRoot.addEventListener("click", (e) => {
+    const clickHandler = (e) => {
       const target = e.target;
 
       if (target.closest("#cart-modal-close-btn") || target.closest(".cart-modal-overlay")) {
@@ -317,13 +313,19 @@ const createCartModal = () => {
         router.push(`/product/${productId}`);
         hide();
       }
-    });
+    };
 
-    modalRoot.addEventListener("change", (e) => {
+    const changeHandler = (e) => {
       const target = e.target;
       if (target.id === "cart-modal-select-all-checkbox") toggleSelectAll(target.checked);
       if (target.classList.contains("cart-item-checkbox")) toggleSelectItem(target.dataset.productId, target.checked);
-    });
+    };
+
+    modalRoot.removeEventListener("click", clickHandler);
+    modalRoot.removeEventListener("change", changeHandler);
+
+    modalRoot.addEventListener("click", clickHandler);
+    modalRoot.addEventListener("change", changeHandler);
   };
 
   // 렌더링
@@ -343,7 +345,7 @@ const createCartModal = () => {
     });
 
     document.body.style.overflow = "hidden";
-    attachEventListeners();
+    requestAnimationFrame(() => attachEventListeners());
   };
 
   // ===== Public API =====

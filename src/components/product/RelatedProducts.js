@@ -94,7 +94,7 @@ const RelatedProducts = Component({
       const relatedProducts = products.filter((p) => p.productId !== currentProductId);
 
       setState({
-        products: relatedProducts.slice(0, 4),
+        products: relatedProducts,
         loading: false,
       });
     } catch (error) {

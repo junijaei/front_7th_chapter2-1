@@ -1,7 +1,7 @@
 import { getProduct } from "@/api/productApi";
 import Footer from "@/components/common/Footer";
 import ProductDetail from "@/components/product/ProductDetail";
-import ProductPageHeader from "@/components/product/ProductPageHeader";
+import ProductHeader from "@/components/product/ProductHeader";
 import Breadcrumb from "@/components/product/Breadcrumb";
 import RelatedProducts from "@/components/product/RelatedProducts";
 import { Component } from "@/core/Component";
@@ -112,7 +112,7 @@ const Product = Component({
     const { product } = state;
 
     // Header는 항상 마운트
-    mountChildren(ProductPageHeader, "#product-header");
+    mountChildren(ProductHeader, "#product-header");
     mountChildren(Footer, "#footer");
 
     // 상품 데이터가 있을 때만 나머지 컴포넌트 마운트

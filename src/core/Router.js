@@ -3,10 +3,7 @@ let routerInstance = null;
 
 // router 초기화 함수
 export const initRouter = (routers) => {
-  // 기존 router 인스턴스가 있으면 정리
-  if (routerInstance && routerInstance.destroy) {
-    routerInstance.destroy();
-  }
+  routerInstance?.destroy?.();
 
   routerInstance = createRouter(routers);
   routerInstance.setup();

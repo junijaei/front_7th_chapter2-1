@@ -275,7 +275,7 @@ const createCartModal = () => {
     if (!modalRoot) {
       modalRoot = document.createElement("div");
       modalRoot.id = CART_MODAL_ROOT_ID;
-      document.body.appendChild(modalRoot);
+      document.querySelector("#root").appendChild(modalRoot);
     }
     return modalRoot;
   };

@@ -66,7 +66,7 @@ const initToastRoot = () => {
     toastRoot = document.createElement("div");
     toastRoot.id = TOAST_ROOT_ID;
     toastRoot.className = "fixed bottom-5 w-screen flex justify-center z-50";
-    document.body.appendChild(toastRoot);
+    document.querySelector("#root").appendChild(toastRoot);
   }
   return toastRoot;
 };

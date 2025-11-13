@@ -19,6 +19,7 @@ const main = () => {
     { path: "/", page: Home },
     { path: "/product", page: Product },
     { path: "/product/:productId", page: Product },
+    { path: "/404", page: Error },
     { path: "/*", page: Error },
   ]);
 };

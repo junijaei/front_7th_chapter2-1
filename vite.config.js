@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import path from "path";
 
-export default defineConfig({
-  base: "/front_7th_chapter2-1/",
+export default defineConfig(({ mode }) => ({
+  base: mode === "production" ? "/front_7th_chapter2-1/" : "/",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -17,4 +17,4 @@ export default defineConfig({
       "@mocks": path.resolve(__dirname, "./src/mocks"),
     },
   },
-});
+}));

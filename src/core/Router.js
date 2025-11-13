@@ -28,6 +28,7 @@ export const createRouter = (routers) => {
   const findCurrentRouter = (currentPath) => {
     return routers.find((router) => {
       const regexPath = router.path
+        .replace(/\*/g, ".*") // * -> .* (모든 문자)
         .replace(/\/:\w+/g, "/([^/]+)") // :param → 캡처 그룹
         .replace(/\//g, "\\/"); // 슬래시 이스케이프
 

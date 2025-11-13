@@ -1,6 +1,7 @@
 import Home from "@pages/Home.js";
 import { initRouter } from "@/core/Router.js";
 import Product from "@/pages/Product.js";
+import Error from "@/pages/Error.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker }) =>
@@ -18,6 +19,7 @@ const main = () => {
     { path: "/", page: Home },
     { path: "/product", page: Product },
     { path: "/product/:productId", page: Product },
+    { path: "/*", page: Error },
   ]);
 };
 
